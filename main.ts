@@ -1,6 +1,7 @@
 namespace SpriteKind {
     export const Text = SpriteKind.create()
     export const ButtonMash = SpriteKind.create()
+    export const GoalPoint = SpriteKind.create()
 }
 function SpawnMagmaRock () {
     magma_rocks = sprites.create(img`
@@ -26,7 +27,7 @@ function SpawnMagmaRock () {
     magma_rocks.setFlag(SpriteFlag.DestroyOnWall, true)
     magma_rocks.startEffect(effects.spray)
     MagmaBounceCount += 1
-    if (MagmaBounceCount == 3) {
+    if (MagmaBounceCount > 1) {
         sprites.destroy(magma_rocks)
     }
 }
@@ -69,6 +70,13 @@ function Game_Load () {
     	
     }
 }
+function SpawnUrchins () {
+    magma_rocks = sprites.create(assets.image`Urchins`, SpriteKind.Projectile)
+    tiles.placeOnTile(magma_rocks, tiles.getTileLocation(22, 0))
+    magma_rocks.setVelocity(0, 21)
+    magma_rocks.setFlag(SpriteFlag.BounceOnWall, true)
+    magma_rocks.startEffect(effects.clouds, 2000)
+}
 function LoadLevelThree () {
 	
 }
@@ -80,11 +88,11 @@ function LoadLevelTwo () {
 }
 function LevelOneEnemyCommands () {
     SpawnWhale()
+    SpawnUrchins()
     while (SharkIsInPlay == true) {
         if (SharkIsInPlay == true) {
             MagmaBounceCount = 0
             SpawnMagmaRock()
-            SpawnMagmaRock2()
             SpawnRock()
             SpawnGiantClam()
             SeaSerpent2()
@@ -316,11 +324,11 @@ function SpawnGiantClam () {
     GiantClam.setFlag(SpriteFlag.DestroyOnWall, true)
     GiantClam.startEffect(effects.clouds, 1000)
     list = [
-    0.1,
-    0.2,
+    0.3,
+    1,
     -0.2,
     -0.1,
-    0.3
+    0.2
     ]
     GiantClam.changeScale(list._pickRandom(), ScaleAnchor.Middle)
 }
@@ -414,31 +422,6 @@ function SeaSerpent2 () {
     SeaSerpent.setFlag(SpriteFlag.GhostThroughWalls, true)
     SeaSerpent.startEffect(effects.clouds, 1000)
 }
-function SpawnMagmaRock2 () {
-    magma_rocks = sprites.create(img`
-        . . . . . 2 2 2 2 2 2 . . . . . 
-        . . . . 4 2 2 2 2 2 2 4 . . . . 
-        . . . 4 4 4 4 4 4 4 4 4 4 . . . 
-        . . 4 4 4 5 5 5 5 5 5 4 4 4 . . 
-        . . 4 4 5 5 5 5 e 5 5 5 4 4 . . 
-        . . e 4 5 5 5 e e 5 5 5 4 e . . 
-        . . e 2 2 4 2 e e 2 4 2 2 e . . 
-        . . e e e 2 e e e e 2 e e e . . 
-        . . e e e e e e e e e e e e . . 
-        . . c b c c b c b c c b b c . . 
-        . . b c b c c b c c c c c b . . 
-        . . c c b c c c c c b b c c . . 
-        . . b c c b c c c b c c b c . . 
-        . . c c c b c c c b c b c b . . 
-        . . . c b c c b c c b c c . . . 
-        . . . . . c b c b c c . . . . . 
-        `, SpriteKind.Projectile)
-    tiles.placeOnTile(magma_rocks, tiles.getTileLocation(20, 0))
-    MagmaBounceCount += 1
-    magma_rocks.setVelocity(0, 21)
-    magma_rocks.setFlag(SpriteFlag.BounceOnWall, true)
-    magma_rocks.startEffect(effects.clouds, 2000)
-}
 sprites.onOverlap(SpriteKind.Player, SpriteKind.ButtonMash, function (sprite, otherSprite) {
     if (otherSprite == BeginPlay && controller.A.isPressed()) {
         color.startFade(color.originalPalette, color.Sweet, 1000)
@@ -449,6 +432,13 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.ButtonMash, function (sprite, ot
         SelectLevelControl()
     }
 })
+function SpawnSeaHorse () {
+    SeaHorse = sprites.create(assets.image`SeaHorse`, SpriteKind.Enemy)
+    tiles.placeOnTile(mySprite, tiles.getTileLocation(0, 0))
+    mySprite.setVelocity(50, 50)
+    mySprite.setFlag(SpriteFlag.BounceOnWall, false)
+    mySprite.startEffect(effects.spray)
+}
 function LoadOpeningAnim () {
     scene.setBackgroundImage(img`
         8888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
@@ -732,6 +722,7 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.Enemy, function (sprite, otherSp
 let FroggeirText: Sprite = null
 let openingAnimationPlayed = 0
 let OpeningShark: Sprite = null
+let SeaHorse: Sprite = null
 let SeaSerpent: Sprite = null
 let Whale: Sprite = null
 let list: number[] = []
