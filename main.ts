@@ -156,6 +156,7 @@ function Game_Load () {
         sprites.destroyAllSpritesOfKind(SpriteKind.Player)
         LoadLevelOne()
     } else if (NextLevel == 2) {
+        ClearStage()
         sprites.destroyAllSpritesOfKind(SpriteKind.Player)
         LoadLevelTwo()
     } else if (NextLevel == 3) {
@@ -165,6 +166,7 @@ function Game_Load () {
     } else if (NextLevel == 5) {
     	
     } else if (NextLevel == 7) {
+        ClearStage()
         sprites.destroyAllSpritesOfKind(SpriteKind.Player)
         RunDeathCheckForButtonPress()
     } else if (false) {
@@ -398,10 +400,18 @@ function LevelTwoCommands () {
             } else {
             	
             }
-            if (BallRedGoalComplete == true && BallBlueGoalComplete == true || EnemyCount <= 0) {
+            if (EnemyCount <= 0 || BallRedGoalComplete == true && BallBlueGoalComplete == true) {
                 SpawnExit()
-                game.splash("Stage Clear, Good Job, Get Through The Door!")
-                break;
+                if (SplashStageClearIsProc == false) {
+                    game.splash("Stage Clear, Good Job, Get Through The Door!")
+                    SplashStageClearIsProc = true
+                }
+                if (LevelClearCheck == true) {
+                    color.startFade(color.Sweet, color.Black, 1000)
+                    pause(2000)
+                    LoadNextLevel()
+                    break;
+                }
             }
         } else if (SharkIsInPlay == false) {
             break;
