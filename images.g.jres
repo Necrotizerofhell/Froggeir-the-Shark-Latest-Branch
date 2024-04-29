@@ -69,6 +69,31 @@
         "mimeType": "image/x-mkcd-f4",
         "displayName": "UnAliveShark"
     },
+    "image14": {
+        "data": "hwQQABAAAAAAAAAAAAAAUAAAAJkFAABZAAA0WVkAAFkAMDOVlQAAWQA0M1lZCZBZADQzlZUFkFlANDNZWQmVWUBFIpWVlVVZQEUiWVlZWVlARCKVlVVZWQBEEVlZCVBVAEQRlZUFUFUAQFRZWQAAVQAARJWVAABVAAAAVQkAAFUAAAAAAAAAUA==",
+        "mimeType": "image/x-mkcd-f4",
+        "displayName": "Balled Sconce"
+    },
+    "image15": {
+        "data": "hwQQABAAAAAAAAAAAAAAUAAAAJkFAABZAAB2WVkAAFkAcHeVlQAAWQB2d1lZCZBZAHZ3lZUFkFlgdndZWQmVWWBliJWVlVVZYGWIWVlZWVlgZoiVlVVZWQBmEVlZCVBVAGYRlZUFUFUAYFZZWQAAVQAAZpWVAABVAAAAVQkAAFUAAAAAAAAAUA==",
+        "mimeType": "image/x-mkcd-f4",
+        "displayName": "BlueBalledSconce"
+    },
+    "image16": {
+        "data": "hwQQABAAAAAAAAAAAAAAAAAAAEREAAAAAAA0MyREAAAAMDMzMyIEAAA0MzMzI0IAADQzIyIzQgBANDMiIiIiBEBFIiJEJCIEQEUiQkREIgRARCJCREQiBABEEUJEREIAAEQRRUQkQgAAQFRVREIEAAAARERERAAAAAAAREQAAAAAAAAAAAAAAA==",
+        "mimeType": "image/x-mkcd-f4",
+        "displayName": "Ball1"
+    },
+    "image17": {
+        "data": "hwQQABAAAAAAAAAAAAAAAAAAAGZmAAAAAAB2d4ZmAAAAcHd3d4gGAAB2d3d3h2gAAHZ3h4h3aABgdneIiIiIBmBliIhmhogGYGWIaGZmiAZgZohoZmaIBgBmEWhmZmgAAGYRZWaGaAAAYFZVZmgGAAAAZmZmZgAAAAAAZmYAAAAAAAAAAAAAAA==",
+        "mimeType": "image/x-mkcd-f4",
+        "displayName": "Ball2"
+    },
+    "image18": {
+        "data": "hwQQABAAAAAAAAAAAAAAUAAAAJkFAABZAAAAWVkAAFkAAACVlQAAWQAAAFlZCZBZAAAAlZUFkFkAAABZWQmVWQAAAJWVlVVZAAAAWVlZWVkAAACVlVVZWQAAAFlZCVBVAAAAlZUFUFUAAABZWQAAVQAAAJWVAABVAAAAVQkAAFUAAAAAAAAAUA==",
+        "mimeType": "image/x-mkcd-f4",
+        "displayName": "SconceSprite"
+    },
     "anim1": {
         "namespace": "myAnimations",
         "id": "anim1",
