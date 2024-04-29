@@ -74,17 +74,21 @@ function SpawnRock () {
     Rock.startEffect(effects.clouds, 1000)
 }
 function LevelOneCommands () {
-    SpawnWhale()
-    SpawnUrchins()
-    SpawnSeaHorse()
-    SpawnRedBall()
-    BallRedIsHeld = false
-    SpawnBlueBall()
-    BallBlueIsHeld = false
-    SpawnPedestal()
-    SpawnPedestal2()
+    while (LevelLoadComplete == false) {
+        SpawnWhale()
+        SpawnUrchins()
+        SpawnSeaHorse()
+        SpawnRedBall()
+        BallRedIsHeld = false
+        SpawnBlueBall()
+        BallBlueIsHeld = false
+        SpawnPedestal()
+        SpawnPedestal2()
+        LevelLoadComplete = true
+    }
     while (SharkIsInPlay == true) {
         if (SharkIsInPlay == true) {
+            SplashStageClearIsProc = false
             MagmaBounceCount = 0
             SpawnRock()
             SpawnGiantClam()
@@ -92,17 +96,25 @@ function LevelOneCommands () {
             pause(2000)
             if (SeaHorseIsActive == true) {
                 timer.background(function () {
-                    timer.after(9000, function () {
+                    timer.after(5000, function () {
                         SpawnSeaHorseShot()
                     })
                 })
             } else {
             	
             }
-            if (BallRedGoalComplete == true && BallBlueGoalComplete == true || EnemyCount <= 0) {
+            if (EnemyCount <= 0 || BallRedGoalComplete == true && BallBlueGoalComplete == true) {
                 SpawnExit()
-                game.splash("Stage Clear, Good Job, Get Through The Door!")
-                break;
+                if (SplashStageClearIsProc == false) {
+                    game.splash("Stage Clear, Good Job, Get Through The Door!")
+                    SplashStageClearIsProc = true
+                }
+                if (LevelClearCheck == true) {
+                    color.startFade(color.Sweet, color.Black, 1000)
+                    pause(2000)
+                    LoadNextLevel()
+                    break;
+                }
             }
         } else if (SharkIsInPlay == false) {
             break;
@@ -184,10 +196,17 @@ function LoadLevelThree () {
 	
 }
 sprites.onOverlap(SpriteKind.Player, SpriteKind.Transition, function (sprite, otherSprite) {
-    if (otherSprite == Doorway && TransitionDoorRepeatBlocker == false) {
+    if (otherSprite == Doorway && (TransitionDoorRepeatBlocker == false && EnemyCount == 0)) {
         info.stopCountdown()
         LevelForwardingFunc()
-        game.splash("transitiontexttext")
+        game.showLongText("\"...So forth went Froggier, to fill his sharky belly one critter at a time\".", DialogLayout.Bottom)
+        TransitionDoorRepeatBlocker = true
+        color.startFade(color.originalPalette, color.Sweet, 1000)
+        LevelClearCheck = true
+    } else if (otherSprite == Doorway && (TransitionDoorRepeatBlocker == false && (BallRedGoalComplete == true && BallBlueGoalComplete == true))) {
+        info.stopCountdown()
+        LevelForwardingFunc()
+        game.showLongText("\"...So forth went Froggier to become an enlightened shark!", DialogLayout.Bottom)
         TransitionDoorRepeatBlocker = true
         color.startFade(color.originalPalette, color.Sweet, 1000)
         LevelClearCheck = true
@@ -204,9 +223,10 @@ function LoadLevelFour () {
 	
 }
 function LoadLevelTwo () {
-    EnemyCount = 0
-    CurLevel = 1
+    CurLevel = 2
+    EnemyCount = 5
     TransitionDoorRepeatBlocker = false
+    LevelForwardingFunc()
     scene.setBackgroundImage(img`
         6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
         6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
@@ -329,7 +349,7 @@ function LoadLevelTwo () {
         6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
         6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
         `)
-    tiles.setCurrentTilemap(tilemap`LevelOne`)
+    tiles.setCurrentTilemap(tilemap`level12`)
     mySprite = sprites.create(assets.image`SharkInPlay`, SpriteKind.Player)
     info.startCountdown(60)
     info.setLife(5)
@@ -389,8 +409,9 @@ function LevelTwoCommands () {
     }
 }
 function LoadLevelOne () {
-    EnemyCount = 0
+    LevelLoadComplete = false
     CurLevel = 1
+    EnemyCount = 2
     TransitionDoorRepeatBlocker = false
     scene.setBackgroundImage(img`
         6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
@@ -517,7 +538,7 @@ function LoadLevelOne () {
     tiles.setCurrentTilemap(tilemap`LevelOne`)
     mySprite = sprites.create(assets.image`SharkInPlay`, SpriteKind.Player)
     info.startCountdown(60)
-    info.setLife(5)
+    info.setLife(500)
     info.setScore(0)
     LevelForwardingFunc()
     scene.cameraFollowSprite(mySprite)
@@ -529,13 +550,7 @@ function LoadLevelOne () {
     })
     while (SharkIsInPlay == true) {
         LevelOneCommands()
-        pause(2000)
-        if (LevelClearCheck == true) {
-            color.startFade(color.Sweet, color.Black, 1000)
-            pause(2000)
-            LoadNextLevel()
-            break;
-        }
+        break;
     }
 }
 function GoToMain () {
@@ -705,17 +720,31 @@ function doSomething () {
     mySprite.startEffect(effects.spray)
 }
 function SpawnWhale () {
-    EnemyCount += 1
     Whale = sprites.create(assets.image`Whale`, SpriteKind.Enemy)
     tiles.placeOnTile(Whale, tiles.getTileLocation(8, 10))
     Whale.setFlag(SpriteFlag.BounceOnWall, true)
     Whale.setVelocity(0, -30)
 }
+function ClearStage () {
+    sprites.destroyAllSpritesOfKind(SpriteKind.ButtonMash)
+    sprites.destroyAllSpritesOfKind(SpriteKind.Enemy)
+    sprites.destroyAllSpritesOfKind(SpriteKind.Projectile)
+    sprites.destroyAllSpritesOfKind(SpriteKind.RangedEnemy)
+    sprites.destroyAllSpritesOfKind(SpriteKind.Objectable)
+    sprites.destroyAllSpritesOfKind(SpriteKind.Transition)
+    sprites.destroyAllSpritesOfKind(SpriteKind.GoalPost)
+    sprites.destroyAllSpritesOfKind(SpriteKind.GoalPost2)
+    sprites.destroyAllSpritesOfKind(SpriteKind.GoalPostComplete)
+    sprites.destroyAllSpritesOfKind(SpriteKind.GoalPostComplete)
+}
 sprites.onOverlap(SpriteKind.Player, SpriteKind.RangedEnemy, function (sprite, otherSprite) {
     if (SharkIsBiting == true) {
+        EnemyCount += -1
         sprites.destroy(otherSprite)
         SeaHorseIsActive = false
     } else {
+        EnemyCount += -1
+        sprites.destroy(otherSprite)
         info.changeLifeBy(-1)
     }
 })
@@ -726,6 +755,7 @@ function LevelForwardingFunc () {
     if (CurLevel == 1) {
         CurLVLText = textsprite.create(convertToText(CurLevel), 7, 10)
         CurLVLText.setPosition(27, 6)
+        CurLVLText.setStayInScreen(true)
     } else if (CurLevel == 2) {
         CurLVLText = textsprite.create(convertToText(CurLevel), 8, 7)
         CurLVLText.setPosition(27, 6)
@@ -826,11 +856,10 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.ButtonMash, function (sprite, ot
     }
 })
 function SpawnSeaHorse () {
-    EnemyCount += 1
     SeaHorse = sprites.create(assets.image`SeaHorse`, SpriteKind.RangedEnemy)
     tiles.placeOnRandomTile(SeaHorse, sprites.dungeon.doorClosedNorth)
-    SeaHorse.setVelocity(0, 0)
-    SeaHorse.setFlag(SpriteFlag.BounceOnWall, false)
+    SeaHorse.setVelocity(0, 12)
+    SeaHorse.setFlag(SpriteFlag.BounceOnWall, true)
     SeaHorse.startEffect(effects.spray)
     SeaHorseIsActive = true
 }
@@ -1176,19 +1205,10 @@ function LoadPreviousLevel () {
 function LoadNextLevel () {
     NextLevel = CurLevel + 1
     TransitionDoorRepeatBlocker = false
-    sprites.destroyAllSpritesOfKind(SpriteKind.ButtonMash)
-    sprites.destroyAllSpritesOfKind(SpriteKind.Enemy)
-    sprites.destroyAllSpritesOfKind(SpriteKind.Projectile)
-    sprites.destroyAllSpritesOfKind(SpriteKind.RangedEnemy)
-    sprites.destroyAllSpritesOfKind(SpriteKind.Objectable)
-    sprites.destroyAllSpritesOfKind(SpriteKind.Transition)
-    sprites.destroyAllSpritesOfKind(SpriteKind.GoalPost)
-    sprites.destroyAllSpritesOfKind(SpriteKind.GoalPost2)
-    sprites.destroyAllSpritesOfKind(SpriteKind.GoalPostComplete)
-    sprites.destroyAllSpritesOfKind(SpriteKind.GoalPostComplete)
     BallRedGoalComplete = false
     BallBlueGoalComplete = false
     LevelClearCheck = false
+    ClearStage()
     Game_Load()
 }
 function SelectLevelControl () {
@@ -1196,6 +1216,7 @@ function SelectLevelControl () {
 }
 sprites.onOverlap(SpriteKind.Player, SpriteKind.Enemy, function (sprite, otherSprite) {
     if (SharkIsBiting == true) {
+        EnemyCount += -1
         sprites.destroy(otherSprite)
     } else {
         sprites.destroy(otherSprite, effects.spray, 900)
@@ -1228,7 +1249,6 @@ let LevelSelect: Sprite = null
 let BeginPlay: Sprite = null
 let ScoreForwarding = 0
 let CurLevel = 0
-let LevelClearCheck = false
 let TransitionDoorRepeatBlocker = false
 let Doorway: Sprite = null
 let GoalPost: Sprite = null
@@ -1236,11 +1256,14 @@ let NextLevel = 0
 let GoalPost2: Sprite = null
 let mySprite: Sprite = null
 let SharkIsBiting = false
-let EnemyCount = 0
+let LevelClearCheck = false
 let BallBlueGoalComplete = false
 let BallRedGoalComplete = false
+let EnemyCount = 0
 let SeaHorseIsActive = false
+let SplashStageClearIsProc = false
 let SharkIsInPlay = false
+let LevelLoadComplete = false
 let Rock: Sprite = null
 let MagmaBounceCount = 0
 let magma_rocks: Sprite = null
