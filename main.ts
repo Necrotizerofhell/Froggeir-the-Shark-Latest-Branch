@@ -20,6 +20,12 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.Objectable, function (sprite, ot
         info.changeScoreBy(1)
         sprites.destroy(otherSprite)
     }
+    if (FirstObjectableTouched == false) {
+        mySprite.sayText("I've eaten a Ki orb.", 2000, true)
+        pause(2000)
+        mySprite.sayText("These are for opening your mind, AND DOORS!", 4000, true)
+        FirstObjectableTouched = true
+    }
 })
 function SpawnMagmaRock () {
     magma_rocks = sprites.create(img`
@@ -88,7 +94,6 @@ function LevelOneCommands () {
     }
     while (SharkIsInPlay == true) {
         if (SharkIsInPlay == true) {
-            SplashStageClearIsProc = false
             MagmaBounceCount = 0
             SpawnRock()
             SpawnGiantClam()
@@ -104,15 +109,14 @@ function LevelOneCommands () {
             	
             }
             if (EnemyCount <= 0 || BallRedGoalComplete == true && BallBlueGoalComplete == true) {
-                SpawnExit()
+                while (ExitHasSpawned == false) {
+                    ExitHasSpawned = true
+                    SpawnExit()
+                    break;
+                }
                 if (SplashStageClearIsProc == false) {
                     game.splash("Stage Clear, Good Job, Get Through The Door!")
                     SplashStageClearIsProc = true
-                }
-                if (LevelClearCheck == true) {
-                    color.startFade(color.Sweet, color.Black, 1000)
-                    pause(2000)
-                    LoadNextLevel()
                     break;
                 }
             }
@@ -124,7 +128,7 @@ function LevelOneCommands () {
 controller.B.onEvent(ControllerButtonEvent.Pressed, function () {
     if (SharkIsInPlay == true) {
         SharkIsBiting = true
-        pause(200)
+        music.play(music.createSoundEffect(WaveShape.Noise, 3300, 1, 255, 0, 500, SoundExpressionEffect.Warble, InterpolationCurve.Linear), music.PlaybackMode.InBackground)
         animation.runImageAnimation(
         mySprite,
         assets.animation`SHarkBite`,
@@ -139,6 +143,7 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.GoalPost2, function (sprite, oth
     if (BallBlueIsHeld == true) {
         GoalPost2 = sprites.create(assets.image`BlueBalledSconce`, SpriteKind.GoalPostComplete)
         tiles.placeOnTile(GoalPost2, tiles.getTileLocation(32, 7))
+        music.play(music.createSoundEffect(WaveShape.Triangle, 300, 200, 255, 0, 75, SoundExpressionEffect.None, InterpolationCurve.Curve), music.PlaybackMode.UntilDone)
         BallBlueIsHeld = false
         BallBlueGoalComplete = true
         info.changeScoreBy(1)
@@ -182,6 +187,7 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.GoalPost, function (sprite, othe
     if (BallRedIsHeld == true) {
         GoalPost = sprites.create(assets.image`Balled Sconce`, SpriteKind.GoalPostComplete)
         tiles.placeOnTile(GoalPost, tiles.getTileLocation(32, 3))
+        music.play(music.createSoundEffect(WaveShape.Triangle, 300, 200, 255, 0, 75, SoundExpressionEffect.None, InterpolationCurve.Curve), music.PlaybackMode.UntilDone)
         BallRedIsHeld = false
         BallRedGoalComplete = true
         info.changeScoreBy(1)
@@ -201,17 +207,29 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.Transition, function (sprite, ot
     if (otherSprite == Doorway && (TransitionDoorRepeatBlocker == false && EnemyCount == 0)) {
         info.stopCountdown()
         LevelForwardingFunc()
+        music.play(music.stringPlayable("C5 A B G A F G E ", 240), music.PlaybackMode.InBackground)
         game.showLongText("\"...So forth went Froggier, to fill his sharky belly one critter at a time\".", DialogLayout.Bottom)
         TransitionDoorRepeatBlocker = true
         color.startFade(color.originalPalette, color.Sweet, 1000)
         LevelClearCheck = true
+        pause(750)
+        color.startFade(color.Sweet, color.Black, 1000)
+        pause(750)
+        music.stopAllSounds()
+        LoadNextLevel()
     } else if (otherSprite == Doorway && (TransitionDoorRepeatBlocker == false && (BallRedGoalComplete == true && BallBlueGoalComplete == true))) {
         info.stopCountdown()
         LevelForwardingFunc()
+        music.play(music.stringPlayable("E D G F B A C5 B ", 240), music.PlaybackMode.InBackground)
         game.showLongText("\"...So forth went Froggier to become an enlightened shark!", DialogLayout.Bottom)
         TransitionDoorRepeatBlocker = true
         color.startFade(color.originalPalette, color.Sweet, 1000)
         LevelClearCheck = true
+        pause(750)
+        color.startFade(color.Sweet, color.Black, 1000)
+        pause(750)
+        music.stopAllSounds()
+        LoadNextLevel()
     }
 })
 function SpawnBlueBall () {
@@ -357,7 +375,9 @@ function LoadLevelTwo () {
     info.setLife(5)
     info.setScore(ScoreForwarding)
     scene.cameraFollowSprite(mySprite)
-    color.startFade(color.Sweet, color.originalPalette, 1000)
+    color.startFade(color.Black, color.Sweet, 750)
+    pause(1000)
+    color.startFade(color.Sweet, color.originalPalette, 750)
     pause(1000)
     SharkIsInPlay = true
     timer.background(function () {
@@ -375,15 +395,18 @@ function LoadLevelTwo () {
     }
 }
 function LevelTwoCommands () {
-    SpawnWhale()
-    SpawnUrchins()
-    SpawnSeaHorse()
-    SpawnRedBall()
-    BallRedIsHeld = false
-    SpawnBlueBall()
-    BallBlueIsHeld = false
-    SpawnPedestal()
-    SpawnPedestal2()
+    while (LevelLoadComplete == false) {
+        SpawnWhale()
+        SpawnUrchins()
+        SpawnSeaHorse()
+        SpawnRedBall()
+        BallRedIsHeld = false
+        SpawnBlueBall()
+        BallBlueIsHeld = false
+        SpawnPedestal()
+        SpawnPedestal2()
+        LevelLoadComplete = true
+    }
     while (SharkIsInPlay == true) {
         if (SharkIsInPlay == true) {
             MagmaBounceCount = 0
@@ -423,6 +446,7 @@ function LoadLevelOne () {
     CurLevel = 1
     EnemyCount = 2
     TransitionDoorRepeatBlocker = false
+    FirstObjectableTouched = false
     scene.setBackgroundImage(img`
         6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
         6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
@@ -547,7 +571,7 @@ function LoadLevelOne () {
         `)
     tiles.setCurrentTilemap(tilemap`LevelOne`)
     mySprite = sprites.create(assets.image`SharkInPlay`, SpriteKind.Player)
-    info.startCountdown(60)
+    info.startCountdown(120)
     info.setLife(500)
     info.setScore(0)
     LevelForwardingFunc()
@@ -753,6 +777,7 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.RangedEnemy, function (sprite, o
         sprites.destroy(otherSprite)
         SeaHorseIsActive = false
     } else {
+        SeaHorseIsActive = false
         EnemyCount += -1
         sprites.destroy(otherSprite)
         info.changeLifeBy(-1)
@@ -761,11 +786,15 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.RangedEnemy, function (sprite, o
 function LevelForwardingFunc () {
     CurLVLText = textsprite.create(convertToText(CurLevel))
     ScoreForwarding = info.score()
-    CurLVLText.setPosition(27, 6)
+    CurLVLText.setPosition(27, 7)
     if (CurLevel == 1) {
-        CurLVLText = textsprite.create(convertToText(CurLevel), 7, 10)
-        CurLVLText.setPosition(27, 6)
-        CurLVLText.setStayInScreen(true)
+        CurLVLText = textsprite.create("Level: " + convertToText(CurLevel), 7, 10)
+        ControlsText = textsprite.create("Press 'B' to Bite!", 7, 10)
+        CurLVLText.setPosition(27, 24)
+        ControlsText.setPosition(55, 37)
+        music.play(music.createSong(hex`0078000408020401001c000f05001202c102c20100040500280000006400280003140006020004240028002c0001252c003000012730003400012534003800012938003c0001223c004000012505001c000f0a006400f4010a0000040000000000000000000000000000000002420000000400011e08000c00012510001400012a18001c00012520002400011e28002c0001292c003000012c30003400012934003800012538003c0001243c004000012207001c00020a006400f4016400000400000000000000000000000000000000031e0000000400012504000800012a0c001000012a10001400012018001c00012c08001c000e050046006603320000040a002d00000064001400013200020100020c00200024000125240028000122`), music.PlaybackMode.UntilDone)
+        sprites.destroy(CurLVLText)
+        sprites.destroy(ControlsText)
     } else if (CurLevel == 2) {
         CurLVLText = textsprite.create(convertToText(CurLevel), 8, 7)
         CurLVLText.setPosition(27, 6)
@@ -839,6 +868,7 @@ info.onLifeZero(function () {
     color.startFade(color.originalPalette, color.Black)
     info.stopCountdown()
     PreviousLevel = CurLevel
+    SeaHorseIsActive = false
     SharkIsInPlay = false
     game.splash("Game Over")
     CurLevel = 6
@@ -1218,6 +1248,8 @@ function LoadNextLevel () {
     BallRedGoalComplete = false
     BallBlueGoalComplete = false
     LevelClearCheck = false
+    SplashStageClearIsProc = false
+    ExitHasSpawned = false
     ClearStage()
     Game_Load()
 }
@@ -1245,6 +1277,7 @@ let GoToMainButton: Sprite = null
 let RetryLevelButton: Sprite = null
 let PreviousLevel = 0
 let SeaSerpent: Sprite = null
+let ControlsText: TextSprite = null
 let CurLVLText: TextSprite = null
 let Whale: Sprite = null
 let mySprite2: Sprite = null
@@ -1259,27 +1292,28 @@ let LevelSelect: Sprite = null
 let BeginPlay: Sprite = null
 let ScoreForwarding = 0
 let CurLevel = 0
+let LevelClearCheck = false
 let TransitionDoorRepeatBlocker = false
 let Doorway: Sprite = null
 let GoalPost: Sprite = null
 let NextLevel = 0
 let GoalPost2: Sprite = null
-let mySprite: Sprite = null
 let SharkIsBiting = false
-let LevelClearCheck = false
+let SplashStageClearIsProc = false
+let ExitHasSpawned = false
 let BallBlueGoalComplete = false
 let BallRedGoalComplete = false
 let EnemyCount = 0
 let SeaHorseIsActive = false
-let SplashStageClearIsProc = false
 let SharkIsInPlay = false
 let LevelLoadComplete = false
 let Rock: Sprite = null
 let MagmaBounceCount = 0
 let magma_rocks: Sprite = null
+let mySprite: Sprite = null
+let FirstObjectableTouched = false
 let BallBlueIsHeld = false
 let BallRedIsHeld = false
 let Ball2: Sprite = null
 let Ball: Sprite = null
-LoadOpeningAnim()
-GoToMain()
+LoadLevelOne()
