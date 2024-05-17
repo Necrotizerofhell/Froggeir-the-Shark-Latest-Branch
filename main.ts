@@ -7,7 +7,57 @@ namespace SpriteKind {
     export const GoalPost = SpriteKind.create()
     export const GoalPost2 = SpriteKind.create()
     export const GoalPostComplete = SpriteKind.create()
+    export const EnvironmentalAid = SpriteKind.create()
 }
+let Ball: Sprite = null
+let Ball2: Sprite = null
+let BallRedIsHeld = false
+let BallBlueIsHeld = false
+let FirstObjectableTouched = false
+let mySprite: Sprite = null
+let magma_rocks: Sprite = null
+let MagmaBounceCount = 0
+let Rock: Sprite = null
+let LevelLoadComplete = false
+let SharkIsInPlay = false
+let SeaHorseIsActive = false
+let EnemyCount = 0
+let BallRedGoalComplete = false
+let BallBlueGoalComplete = false
+let ExitHasSpawned = false
+let SplashStageClearIsProc = false
+let SharkIsBiting = false
+let GoalPost2: Sprite = null
+let NextLevel = 0
+let GoalPost: Sprite = null
+let Uni: Sprite = null
+let Doorway: Sprite = null
+let TransitionDoorRepeatBlocker = false
+let LevelClearCheck = false
+let CurLevel = 0
+let ScoreForwarding = 0
+let BeginPlay: Sprite = null
+let LevelSelect: Sprite = null
+let MainAim: Sprite = null
+let CurPlayer_X = 0
+let CurPlayer_Y = 0
+let GiantClam: Sprite = null
+let list: number[] = []
+let SeaHorsePellet: Sprite = null
+let SeaHorse: Sprite = null
+let mySprite2: Sprite = null
+let Whale: Sprite = null
+let CurLVLText: TextSprite = null
+let ControlsText: TextSprite = null
+let SeaSerpent: Sprite = null
+let PreviousLevel = 0
+let RetryLevelButton: Sprite = null
+let GoToMainButton: Sprite = null
+let CloudSpawner: Sprite = null
+let DeathAim: Sprite = null
+let OpeningShark: Sprite = null
+let openingAnimationPlayed = 0
+let FroggeirText: Sprite = null
 sprites.onOverlap(SpriteKind.Player, SpriteKind.Objectable, function (sprite, otherSprite) {
     if (otherSprite == Ball) {
         music.play(music.createSoundEffect(WaveShape.Sine, 200, 600, 255, 0, 250, SoundExpressionEffect.None, InterpolationCurve.Linear), music.PlaybackMode.UntilDone)
@@ -21,31 +71,14 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.Objectable, function (sprite, ot
         sprites.destroy(otherSprite)
     }
     if (FirstObjectableTouched == false) {
-        mySprite.sayText("I've eaten a Ki orb.", 2000, true)
+        mySprite.sayText("I've found a strange orb.", 2000, true)
         pause(2000)
         mySprite.sayText("These are for opening your mind, AND DOORS!", 4000, true)
         FirstObjectableTouched = true
     }
 })
 function SpawnMagmaRock () {
-    magma_rocks = sprites.create(img`
-        . . . . . c c b c b c . . . . . 
-        . . . c c b c c b c c b c . . . 
-        . . b c b c b c c c b c c c . . 
-        . . c b c c b c c c b c c b . . 
-        . . c c b b c c c c c b c c . . 
-        . . b c c c c c b c c b c b . . 
-        . . c b b c c b c b c c b c . . 
-        . . e e e e e e e e e e e e . . 
-        . . e e e 2 e e e e 2 e e e . . 
-        . . e 2 2 4 2 e e 2 4 2 2 e . . 
-        . . e 4 5 5 5 e e 5 5 5 4 e . . 
-        . . 4 4 5 5 5 e 5 5 5 5 4 4 . . 
-        . . 4 4 4 5 5 5 5 5 5 4 4 4 . . 
-        . . . 4 4 4 4 4 4 4 4 4 4 . . . 
-        . . . . 4 2 2 2 2 2 2 4 . . . . 
-        . . . . . 2 2 2 2 2 2 . . . . . 
-        `, SpriteKind.Projectile)
+    magma_rocks = sprites.create(assets.image`MagmaRock`, SpriteKind.Projectile)
     tiles.placeOnTile(magma_rocks, tiles.getTileLocation(20, 8))
     magma_rocks.setVelocity(0, -60)
     magma_rocks.setFlag(SpriteFlag.DestroyOnWall, true)
@@ -56,24 +89,7 @@ function SpawnMagmaRock () {
     }
 }
 function SpawnRock () {
-    Rock = sprites.create(img`
-        . . . . . . . . . . . . . . . . 
-        . . . . . . . . . . . . . . . . 
-        . . . . . . . . . . . . . . . . 
-        . . . . . . 3 . . . . . . . . . 
-        . . . . . . 3 . . . . . . . . . 
-        . . . . 3 . 3 . . 3 . . . . . . 
-        . . . . 3 . 3 c . 3 . . . . . . 
-        . . . . c a a a c 3 . . . . . . 
-        . . . c c f a b b c . . . . . . 
-        . . . b f f b f a a . . . . . . 
-        . . . b b a b f f a . . . . . . 
-        . . . c b f b b a c . . . . . . 
-        . . . . b a f c c . . . . . . . 
-        . . . . . b b c . . . . . . . . 
-        . . . . . . . . . . . . . . . . 
-        . . . . . . . . . . . . . . . . 
-        `, SpriteKind.Projectile)
+    Rock = sprites.create(assets.image`Rock`, SpriteKind.Projectile)
     tiles.placeOnTile(Rock, tiles.getTileLocation(8, 1))
     Rock.setVelocity(0, 30)
     Rock.setFlag(SpriteFlag.DestroyOnWall, true)
@@ -81,15 +97,13 @@ function SpawnRock () {
 }
 function LevelOneCommands () {
     while (LevelLoadComplete == false) {
-        SpawnWhale()
-        SpawnUrchins()
-        SpawnSeaHorse()
         SpawnRedBall()
         BallRedIsHeld = false
         SpawnBlueBall()
         BallBlueIsHeld = false
         SpawnPedestal()
         SpawnPedestal2()
+        SpawnSeaHorse()
         LevelLoadComplete = true
     }
     while (SharkIsInPlay == true) {
@@ -97,7 +111,6 @@ function LevelOneCommands () {
             MagmaBounceCount = 0
             SpawnRock()
             SpawnGiantClam()
-            SeaSerpent2()
             pause(2000)
             if (SeaHorseIsActive == true) {
                 timer.background(function () {
@@ -131,7 +144,143 @@ controller.B.onEvent(ControllerButtonEvent.Pressed, function () {
         music.play(music.createSoundEffect(WaveShape.Noise, 3300, 1, 255, 0, 500, SoundExpressionEffect.Warble, InterpolationCurve.Linear), music.PlaybackMode.InBackground)
         animation.runImageAnimation(
         mySprite,
-        assets.animation`SHarkBite`,
+        [img`
+            ..............fffcc.................
+            ..............fbbddc................
+            ...............fbbddc...............
+            ...............fcbbccffffff.........
+            ..............ffcccbbbbbbbbfff......
+            ccccc......fffcbbbbbbbbbbbbbbbf.....
+            cbbbdc...ffcccbbbbcbcbffbbbbbcb.....
+            .cbbddcffcccccbbbcbcbbff1111bbb.....
+            ..fbbdbcccccccbbbcbcb11111111bf.....
+            ..fcbbcccccccccbbbbbb11c33cccf......
+            ..fccbffccccccccbbbb11cc131cf.......
+            .fcbbf..cbdbcccccbbb1111c33f........
+            .fbbf....ccdddddfbbbc1111ff.........
+            fbbf.......ccddfbbdbf1ccc...........
+            fff..........cfbbdbfcc..............
+            ..............fffff.................
+            `,img`
+            .............fffcc..................
+            .............fbbddc.................
+            ..............fbbddfffffffff........
+            ..............fcbcfbbbbbbbbbf.......
+            ...........ffffccbbffb111cbbf.......
+            ccccc....ffcccbbbbbff111111bf.......
+            cbbbdc..fccccbbcbcbb1133cc1f........
+            .cbbddcfcccccbcbcbbb1c131ccf........
+            ..fbbdbccccccbcbcbbb111111f.........
+            ..fcbbccccccccbbbbb1111111f.........
+            ..fccbffcccccccbbbb111111f..........
+            .fcbbf.cbdbcccccbbbc1111c...........
+            .fbbf...cddddddfbbbc11cc............
+            fbbf.....ccdddfbbdbffc..............
+            fff........ccfbbdbf.................
+            .............fffff..................
+            `,img`
+            ...........fffcc....................
+            ...........fbbbbcfffffffff..........
+            ............fbfffbbbbbbbbbf.........
+            ............ffbbbbffb111bbf.........
+            ..........ffcbbbbbff11111bf.........
+            .........fcccbcbcbb11cccc1f.........
+            ccccc...fcccbcbcbbb1c1c1cf..........
+            cbbddccfccccbcbcbbb1333c............
+            .ccbddbcccccbbbbbbb1c333c...........
+            ..ccbbcccccccbbbbb11c133c...........
+            ..fccbffccccccbbbb111c31cc..........
+            ..fccf.cbbcccccbbbc111111c..........
+            .fcbbf..cdddddfbbbc1111cc...........
+            .fbbf....cdddfbbdbffccc.............
+            fbbf......ccfbbdbf..................
+            fff.........fffff...................
+            `,img`
+            ..........fffcc...fffffff...........
+            ..........fbbbbcffbbbbbbbf..........
+            ...........fbffbbbbb111bbf..........
+            ...........ffbbbbff11111bf..........
+            .........ffcbbbbbff1cccc1f..........
+            ........fcccbcbcbb1c1c1cff..........
+            ccccc..fcccbcbcbbb1333ccf...........
+            cbbddcfccccbcbcbbb1c333c............
+            .ccbddcccccbbbbbbb1c333c............
+            ..ccbbccccccbbbbb11c333c............
+            ..fccbfccccccbbbb11c133cc...........
+            ..fccfcbbcccccbbbc11c31cc...........
+            .fcbbf.cdddddfbbbc111111c...........
+            .fbbf...cdddfbbdbf1111cc............
+            fbbf.....ccfbbdbfffccc..............
+            fff........fffff....................
+            `,img`
+            ...........fffcc....................
+            ...........fbbbbcfffffffff..........
+            ............fbfffbbbbbbbbbf.........
+            ............ffbbbbffb111bbf.........
+            ..........ffcbbbbbff11111bf.........
+            .........fcccbcbcbb11cccc1f.........
+            ccccc...fcccbcbcbbb1c1c1cf..........
+            cbbddccfccccbcbcbbb1333c............
+            .ccbddbcccccbbbbbbb1c333c...........
+            ..ccbbcccccccbbbbb11c133c...........
+            ..fccbffccccccbbbb111c31cc..........
+            ..fccf.cbbcccccbbbc111111c..........
+            .fcbbf..cdddddfbbbc1111cc...........
+            .fbbf....cdddfbbdbffccc.............
+            fbbf......ccfbbdbf..................
+            fff.........fffff...................
+            `,img`
+            .............fffcc..................
+            .............fbbddc.................
+            ..............fbbddfffffffff........
+            ..............fcbcfbbbbbbbbbf.......
+            ...........ffffccbbffb111cbbf.......
+            ccccc....ffcccbbbbbff111111bf.......
+            cbbbdc..fccccbbcbcbb1133cc1f........
+            .cbbddcfcccccbcbcbbb1c131ccf........
+            ..fbbdbccccccbcbcbbb111111f.........
+            ..fcbbccccccccbbbbb1111111f.........
+            ..fccbffcccccccbbbb111111f..........
+            .fcbbf.cbdbcccccbbbc1111c...........
+            .fbbf...cddddddfbbbc11cc............
+            fbbf.....ccdddfbbdbffc..............
+            fff........ccfbbdbf.................
+            .............fffff..................
+            `,img`
+            ..............fffcc.................
+            ..............fbbddc................
+            ...............fbbddc...............
+            ...............fcbbccffffff.........
+            ..............ffcccbbbbbbbbfff......
+            ccccc......fffcbbbbbbbbbbbbbbbf.....
+            cbbbdc...ffcccbbbbcbcbffbbbbbcb.....
+            .cbbddcffcccccbbbcbcbbff1111bbb.....
+            ..fbbdbcccccccbbbcbcb11111111bf.....
+            ..fcbbcccccccccbbbbbb11c33cccf......
+            ..fccbffccccccccbbbb11cc131cf.......
+            .fcbbf..cbdbcccccbbb1111c33f........
+            .fbbf....ccdddddfbbbc1111ff.........
+            fbbf.......ccddfbbdbf1ccc...........
+            fff..........cfbbdbfcc..............
+            ..............fffff.................
+            `,img`
+            ..................fffcc.............
+            ..................fbbddc............
+            ...................fbbddc...........
+            ....ccc............fcbbccf..........
+            ....cbbcc.........ffccccccffffff....
+            .....cbbdc.....fffcbbbbbbbbbbbbbff..
+            .....fbbddc..ffcccbbbbcbcbbbbbbbbbff
+            ......fbbdfffcccccbbbcbcbbffbbbbbcbf
+            ......fcbbbcccccccbbbcbcb1ff1111bbbf
+            ......fccbcccccccccbbbbbb11111111bf.
+            .....fcbbfffccccccccbbbb11cc33cccf..
+            .....fbbf...cbdbcccccbbb111c131cf...
+            ....fbbf.....ccdddddfbbbc111c33f....
+            ....fff........ccddfbbdbf1111ff.....
+            .................cfbbdbfccccc.......
+            ..................fffff.............
+            `],
         100,
         false
         )
@@ -141,8 +290,8 @@ controller.B.onEvent(ControllerButtonEvent.Pressed, function () {
 })
 sprites.onOverlap(SpriteKind.Player, SpriteKind.GoalPost2, function (sprite, otherSprite) {
     if (BallBlueIsHeld == true) {
-        GoalPost2 = sprites.create(assets.image`BlueBalledSconce`, SpriteKind.GoalPostComplete)
-        tiles.placeOnTile(GoalPost2, tiles.getTileLocation(32, 7))
+        GoalPost2 = sprites.create(assets.image`Goal2Complete`, SpriteKind.GoalPostComplete)
+        tiles.placeOnTile(GoalPost2, tiles.getTileLocation(22, 7))
         music.play(music.createSoundEffect(WaveShape.Triangle, 300, 200, 255, 0, 75, SoundExpressionEffect.None, InterpolationCurve.Curve), music.PlaybackMode.UntilDone)
         BallBlueIsHeld = false
         BallBlueGoalComplete = true
@@ -150,11 +299,11 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.GoalPost2, function (sprite, oth
     }
 })
 function SpawnPedestal2 () {
-    GoalPost2 = sprites.create(assets.image`SconceSprite`, SpriteKind.GoalPost2)
-    tiles.placeOnTile(GoalPost2, tiles.getTileLocation(32, 7))
+    GoalPost2 = sprites.create(assets.image`Pedestal`, SpriteKind.GoalPost2)
+    tiles.placeOnTile(GoalPost2, tiles.getTileLocation(22, 7))
     GoalPost2.setVelocity(0, 0)
     GoalPost2.setFlag(SpriteFlag.DestroyOnWall, false)
-    GoalPost2.startEffect(effects.spray)
+    GoalPost2.startEffect(effects.bubbles)
 }
 function Game_Load () {
     if (NextLevel == 1) {
@@ -185,8 +334,8 @@ controller.A.onEvent(ControllerButtonEvent.Pressed, function () {
 })
 sprites.onOverlap(SpriteKind.Player, SpriteKind.GoalPost, function (sprite, otherSprite) {
     if (BallRedIsHeld == true) {
-        GoalPost = sprites.create(assets.image`Balled Sconce`, SpriteKind.GoalPostComplete)
-        tiles.placeOnTile(GoalPost, tiles.getTileLocation(32, 3))
+        GoalPost = sprites.create(assets.image`Goal1Complete`, SpriteKind.GoalPostComplete)
+        tiles.placeOnTile(GoalPost, tiles.getTileLocation(22, 12))
         music.play(music.createSoundEffect(WaveShape.Triangle, 300, 200, 255, 0, 75, SoundExpressionEffect.None, InterpolationCurve.Curve), music.PlaybackMode.UntilDone)
         BallRedIsHeld = false
         BallRedGoalComplete = true
@@ -194,11 +343,11 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.GoalPost, function (sprite, othe
     }
 })
 function SpawnUrchins () {
-    magma_rocks = sprites.create(assets.image`Urchins`, SpriteKind.Projectile)
-    tiles.placeOnTile(magma_rocks, tiles.getTileLocation(22, 0))
-    magma_rocks.setVelocity(0, 21)
-    magma_rocks.setFlag(SpriteFlag.BounceOnWall, true)
-    magma_rocks.startEffect(effects.clouds, 2000)
+    Uni = sprites.create(assets.image`Uni`, SpriteKind.Projectile)
+    tiles.placeOnTile(Uni, tiles.getTileLocation(22, 0))
+    Uni.setVelocity(0, 21)
+    Uni.setFlag(SpriteFlag.BounceOnWall, true)
+    Uni.startEffect(effects.clouds, 2000)
 }
 function LoadLevelThree () {
 	
@@ -233,8 +382,25 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.Transition, function (sprite, ot
     }
 })
 function SpawnBlueBall () {
-    Ball2 = sprites.create(assets.image`Ball2`, SpriteKind.Objectable)
-    tiles.placeOnRandomTile(Ball2, sprites.dungeon.floorLight0)
+    Ball2 = sprites.create(img`
+        . . . . . . . . . . . . . . . . 
+        . . . . . . 6 6 6 6 . . . . . . 
+        . . . . 6 6 6 5 5 6 6 6 . . . . 
+        . . . 7 7 7 7 6 6 6 6 6 6 . . . 
+        . . 6 7 7 7 7 8 8 8 1 1 6 6 . . 
+        . . 7 7 7 7 7 8 8 8 1 1 5 6 . . 
+        . 6 7 7 7 7 8 8 8 8 8 5 5 6 6 . 
+        . 6 7 7 7 8 8 8 6 6 6 6 5 6 6 . 
+        . 6 6 7 7 8 8 6 6 6 6 6 6 6 6 . 
+        . 6 8 7 7 8 8 6 6 6 6 6 6 6 6 . 
+        . . 6 8 7 7 8 6 6 6 6 6 8 6 . . 
+        . . 6 8 8 7 8 8 6 6 6 8 6 6 . . 
+        . . . 6 8 8 8 8 8 8 8 8 6 . . . 
+        . . . . 6 6 8 8 8 8 6 6 . . . . 
+        . . . . . . 6 6 6 6 . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        `, SpriteKind.Objectable)
+    tiles.placeOnRandomTile(Ball2, sprites.dungeon.chestOpen)
     Ball2.setVelocity(0, 0)
     Ball2.setFlag(SpriteFlag.DestroyOnWall, false)
     Ball2.startEffect(effects.starField)
@@ -369,8 +535,25 @@ function LoadLevelTwo () {
         6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
         6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
         `)
-    tiles.setCurrentTilemap(tilemap`level12`)
-    mySprite = sprites.create(assets.image`SharkInPlay`, SpriteKind.Player)
+    tiles.setCurrentTilemap(tilemap`level9`)
+    mySprite = sprites.create(img`
+        ..............fffcc.............
+        ..............fbbddc............
+        ...............fbbddc...........
+        ccc............fcbbccf..........
+        cbbcc.........ffccccccffffff....
+        .cbbdc.....fffcbbbbbbbbbbbbbff..
+        .fbbddc..ffcccbbbbcbcbbbbbbbbbff
+        ..fbbdfffcccccbbbcbcbbffbbbbbcbf
+        ..fcbbbcccccccbbbcbcb1ff1111bbbf
+        ..fccbcccccccccbbbbbb11111111bf.
+        .fcbbfffccccccccbbbb11cc33cccf..
+        .fbbf...cbdbcccccbbb111c131cf...
+        fbbf.....ccdddddfbbbc111c33f....
+        fff........ccddfbbdbf1111ff.....
+        .............cfbbdbfccccc.......
+        ..............fffff.............
+        `, SpriteKind.Player)
     info.startCountdown(60)
     info.setLife(5)
     info.setScore(ScoreForwarding)
@@ -447,6 +630,7 @@ function LoadLevelOne () {
     EnemyCount = 2
     TransitionDoorRepeatBlocker = false
     FirstObjectableTouched = false
+    tiles.setCurrentTilemap(tilemap`Level1Redone`)
     scene.setBackgroundImage(img`
         6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
         6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
@@ -569,10 +753,28 @@ function LoadLevelOne () {
         6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
         6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
         `)
-    tiles.setCurrentTilemap(tilemap`LevelOne`)
-    mySprite = sprites.create(assets.image`SharkInPlay`, SpriteKind.Player)
-    info.startCountdown(120)
-    info.setLife(500)
+    mySprite = sprites.create(img`
+        ..............fffcc.............
+        ..............fbbddc............
+        ...............fbbddc...........
+        ccc............fcbbccf..........
+        cbbcc.........ffccccccffffff....
+        .cbbdc.....fffcbbbbbbbbbbbbbff..
+        .fbbddc..ffcccbbbbcbcbbbbbbbbbff
+        ..fbbdfffcccccbbbcbcbbffbbbbbcbf
+        ..fcbbbcccccccbbbcbcb1ff1111bbbf
+        ..fccbcccccccccbbbbbb11111111bf.
+        .fcbbfffccccccccbbbb11cc33cccf..
+        .fbbf...cbdbcccccbbb111c131cf...
+        fbbf.....ccdddddfbbbc111c33f....
+        fff........ccddfbbdbf1111ff.....
+        .............cfbbdbfccccc.......
+        ..............fffff.............
+        `, SpriteKind.Player)
+    tiles.placeOnTile(mySprite, tiles.getTileLocation(2, 12))
+    music.play(music.createSong(hex`0078000408020401001c000f05001202c102c20100040500280000006400280003140006020004240028002c0001252c003000012730003400012534003800012938003c0001223c004000012505001c000f0a006400f4010a0000040000000000000000000000000000000002420000000400011e08000c00012510001400012a18001c00012520002400011e28002c0001292c003000012c30003400012934003800012538003c0001243c004000012207001c00020a006400f4016400000400000000000000000000000000000000031e0000000400012504000800012a0c001000012a10001400012018001c00012c08001c000e050046006603320000040a002d00000064001400013200020100020c00200024000125240028000122`), music.PlaybackMode.UntilDone)
+    info.startCountdown(125)
+    info.setLife(5)
     info.setScore(0)
     LevelForwardingFunc()
     scene.cameraFollowSprite(mySprite)
@@ -588,11 +790,10 @@ function LoadLevelOne () {
     }
 }
 function GoToMain () {
-    sprites.destroyAllSpritesOfKind(SpriteKind.Player)
     CurLevel = 0
-    tiles.setCurrentTilemap(tilemap`level2`)
-    scene.setBackgroundImage(assets.image`BlueScreen`)
-    tiles.setWallAt(tiles.getTileLocation(5, 2), true)
+    LevelForwardingFunc()
+    sprites.destroyAllSpritesOfKind(SpriteKind.Player)
+    tiles.setCurrentTilemap(tilemap`MenuPlace`)
     BeginPlay = sprites.create(img`
         . . . . d d d d d d d d . . . . 
         . . . d 7 7 7 7 7 7 7 7 d . . . 
@@ -631,12 +832,29 @@ function GoToMain () {
         . . . . c c c c c c c c . . . . 
         `, SpriteKind.ButtonMash)
     tiles.placeOnTile(LevelSelect, tiles.getTileLocation(4, 2))
-    MainAim = sprites.create(assets.image`shark`, SpriteKind.Player)
+    MainAim = sprites.create(img`
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . b b . . . . . . . 
+        . . . . . . b 5 5 b . . . . . . 
+        . . . b b b 5 5 1 1 b b b . . . 
+        . . . b 5 5 5 5 1 1 5 5 b . . . 
+        . . . . b d 5 5 5 5 d b . . . . 
+        . . . . c b 5 5 5 5 b c . . . . 
+        . . . . c 5 d d d d 5 c . . . . 
+        . . . . c 5 d c c d 5 c . . . . 
+        . . . . c c c . . c c c . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        `, SpriteKind.Player)
     tiles.placeOnTile(MainAim, tiles.getTileLocation(2, 2))
     CurPlayer_X = 2
     CurPlayer_Y = 2
     color.startFade(color.Black, color.originalPalette, 1000)
-    MainAim.sayText("What are ye vibing?", 2000, true)
+    MainAim.sayText("Green to \"Dive-in\", Red to \"See credits\".", 5000, true)
     controller.moveSprite(MainAim, 100, 100)
 }
 sprites.onOverlap(SpriteKind.Projectile, SpriteKind.Projectile, function (sprite, otherSprite) {
@@ -647,24 +865,7 @@ sprites.onOverlap(SpriteKind.Projectile, SpriteKind.Projectile, function (sprite
     }
 })
 function SpawnGiantClam () {
-    GiantClam = sprites.create(img`
-        . . . . . . d d c c . . . . . . 
-        . . . . d d b b b b c c . . . . 
-        . d d d d b b b b b b c c c c . 
-        . d b b b d b b b b c b b b c . 
-        . d b b b b d b b c b b b b c . 
-        d d b b b b d b b c b b b b c c 
-        d b d b b b b d c b b b b c b c 
-        d b b d b b b d c b b b c b b c 
-        d b b b d b b d c b b c b b b c 
-        d b b b d b b d c b b c b b b c 
-        d b b b b d b d c b c b b b b c 
-        . d b b b b d d c c b b b b c . 
-        . . d b b b b d c b b b b c . . 
-        . . . d b b b d c b b b c . . . 
-        . . d b d d d d c c c c b c . . 
-        . d b b b b b b b b b b b b c . 
-        `, SpriteKind.Projectile)
+    GiantClam = sprites.create(assets.image`Clam`, SpriteKind.Projectile)
     tiles.placeOnTile(GiantClam, tiles.getTileLocation(11, 1))
     GiantClam.setVelocity(0, 50)
     GiantClam.setFlag(SpriteFlag.DestroyOnWall, true)
@@ -679,11 +880,11 @@ function SpawnGiantClam () {
     GiantClam.changeScale(list._pickRandom(), ScaleAnchor.Middle)
 }
 function SpawnPedestal () {
-    GoalPost = sprites.create(assets.image`SconceSprite`, SpriteKind.GoalPost)
-    tiles.placeOnTile(GoalPost, tiles.getTileLocation(32, 3))
+    GoalPost = sprites.create(assets.image`Pedestal`, SpriteKind.GoalPost)
+    tiles.placeOnTile(GoalPost, tiles.getTileLocation(22, 12))
     GoalPost.setVelocity(0, 0)
     GoalPost.setFlag(SpriteFlag.DestroyOnWall, false)
-    GoalPost.startEffect(effects.spray)
+    GoalPost.startEffect(effects.bubbles)
 }
 sprites.onOverlap(SpriteKind.Player, SpriteKind.Projectile, function (sprite, otherSprite) {
     sprites.destroy(otherSprite)
@@ -693,22 +894,13 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.Projectile, function (sprite, ot
 })
 function SpawnSeaHorseShot () {
     SeaHorsePellet = sprites.create(img`
-        . . . . . . . . . . . . . . . . 
-        . . . . . . . . . . . . . . . . 
-        . . . . . . . . . . . . . . . . 
-        . e 2 4 . . . . . . . . . . . . 
-        c c e 5 5 4 2 . . . . . . . . . 
-        . e 2 4 . . . . . . . . . . . . 
-        . . . . . . . . . . . . . . . . 
-        . . . . . . . . . . . . . . . . 
-        . . . . . . . . . . . . . . . . 
-        . . . . . . . . . . . . . . . . 
-        . . . . . . . . . . . . . . . . 
-        . . . . . . . . . . . . . . . . 
-        . . . . . . . . . . . . . . . . 
-        . . . . . . . . . . . . . . . . 
-        . . . . . . . . . . . . . . . . 
-        . . . . . . . . . . . . . . . . 
+        . . . . . . . 
+        . . . . . . . 
+        . e 2 4 . . . 
+        c c e 5 5 4 2 
+        . e 2 4 . . . 
+        . . . . . . . 
+        . . . . . . . 
         `, SpriteKind.Projectile)
     SeaHorsePellet.setPosition(SeaHorse.x, SeaHorse.y)
     SeaHorsePellet.setVelocity(-21, 3)
@@ -716,15 +908,31 @@ function SpawnSeaHorseShot () {
     SeaHorsePellet.startEffect(effects.disintegrate, 1000)
 }
 function SpawnExit () {
-    Doorway = sprites.create(assets.image`DoubleDoor`, SpriteKind.Transition)
-    tiles.placeOnRandomTile(Doorway, sprites.dungeon.doorClosedNorth)
-    Doorway.setVelocity(0, 0)
+    Doorway = sprites.create(assets.image`Door`, SpriteKind.Transition)
+    tiles.placeOnRandomTile(Doorway, sprites.dungeon.doorLockedNorth)
     Doorway.setFlag(SpriteFlag.DestroyOnWall, false)
     Doorway.startEffect(effects.bubbles)
 }
 function SpawnRedBall () {
-    Ball = sprites.create(assets.image`Ball1`, SpriteKind.Objectable)
-    tiles.placeOnRandomTile(Ball, sprites.dungeon.floorLight0)
+    Ball = sprites.create(img`
+        . . . . . . . . . . . . . . . . 
+        . . . . . . 4 4 4 4 . . . . . . 
+        . . . . 4 4 4 5 5 4 4 4 . . . . 
+        . . . 3 3 3 3 4 4 4 4 4 4 . . . 
+        . . 4 3 3 3 3 2 2 2 1 1 4 4 . . 
+        . . 3 3 3 3 3 2 2 2 1 1 5 4 . . 
+        . 4 3 3 3 3 2 2 2 2 2 5 5 4 4 . 
+        . 4 3 3 3 2 2 2 4 4 4 4 5 4 4 . 
+        . 4 4 3 3 2 2 4 4 4 4 4 4 4 4 . 
+        . 4 2 3 3 2 2 4 4 4 4 4 4 4 4 . 
+        . . 4 2 3 3 2 4 4 4 4 4 2 4 . . 
+        . . 4 2 2 3 2 2 4 4 4 2 4 4 . . 
+        . . . 4 2 2 2 2 2 2 2 2 4 . . . 
+        . . . . 4 4 2 2 2 2 4 4 . . . . 
+        . . . . . . 4 4 4 4 . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        `, SpriteKind.Objectable)
+    tiles.placeOnRandomTile(Ball, sprites.dungeon.chestOpen)
     Ball.setVelocity(0, 0)
     Ball.setFlag(SpriteFlag.DestroyOnWall, false)
     Ball.startEffect(effects.starField)
@@ -754,7 +962,7 @@ function doSomething () {
     mySprite.startEffect(effects.spray)
 }
 function SpawnWhale () {
-    Whale = sprites.create(assets.image`Whale`, SpriteKind.Enemy)
+    Whale = sprites.create(assets.image`Orca`, SpriteKind.Enemy)
     tiles.placeOnTile(Whale, tiles.getTileLocation(8, 10))
     Whale.setFlag(SpriteFlag.BounceOnWall, true)
     Whale.setVelocity(0, -30)
@@ -792,7 +1000,6 @@ function LevelForwardingFunc () {
         ControlsText = textsprite.create("Press 'B' to Bite!", 7, 10)
         CurLVLText.setPosition(27, 24)
         ControlsText.setPosition(55, 37)
-        music.play(music.createSong(hex`0078000408020401001c000f05001202c102c20100040500280000006400280003140006020004240028002c0001252c003000012730003400012534003800012938003c0001223c004000012505001c000f0a006400f4010a0000040000000000000000000000000000000002420000000400011e08000c00012510001400012a18001c00012520002400011e28002c0001292c003000012c30003400012934003800012538003c0001243c004000012207001c00020a006400f4016400000400000000000000000000000000000000031e0000000400012504000800012a0c001000012a10001400012018001c00012c08001c000e050046006603320000040a002d00000064001400013200020100020c00200024000125240028000122`), music.PlaybackMode.UntilDone)
         sprites.destroy(CurLVLText)
         sprites.destroy(ControlsText)
     } else if (CurLevel == 2) {
@@ -809,56 +1016,7 @@ function LevelForwardingFunc () {
     }
 }
 function SeaSerpent2 () {
-    SeaSerpent = sprites.create(img`
-        .....222222.....
-        .....2.22.2.....
-        .....2.22.2.....
-        .......22.......
-        .......22.......
-        .....666666.....
-        ....67777776....
-        ...6777777776...
-        ..677627762776..
-        ..677247724776..
-        ..677777777776..
-        ..677777777776..
-        ...6777777776...
-        ...6667777666...
-        .....977779.....
-        .....977779.....
-        .....977779.....
-        ....9777779.....
-        ...9777779......
-        ...9777779......
-        ..9777779.......
-        ..977779........
-        ..977779........
-        ..977779........
-        ..977779........
-        ..9777779.......
-        ..9777779.......
-        ...9777779......
-        ...9777779......
-        ....9777779.....
-        ....97777779....
-        .....97777779...
-        .....99777779...
-        .......9777779..
-        .......9777779..
-        ........9777799.
-        ........9777799.
-        .........97779..
-        .........97779..
-        ........997779..
-        ........97779...
-        .......997779...
-        .......977799...
-        ......997779....
-        ......977779....
-        ......97779.....
-        ......97779.....
-        ......9999......
-        `, SpriteKind.Projectile)
+    SeaSerpent = sprites.create(assets.image`Snek`, SpriteKind.Projectile)
     tiles.placeOnTile(SeaSerpent, tiles.getTileLocation(14, 9))
     SeaSerpent.setVelocity(0, -75)
     SeaSerpent.setFlag(SpriteFlag.GhostThroughWalls, true)
@@ -892,11 +1050,12 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.ButtonMash, function (sprite, ot
         LoadPreviousLevel()
     }
     if (otherSprite == GoToMainButton && controller.A.isPressed()) {
+        NextLevel = 0
         GoToMain()
     }
 })
 function SpawnSeaHorse () {
-    SeaHorse = sprites.create(assets.image`SeaHorse`, SpriteKind.RangedEnemy)
+    SeaHorse = sprites.create(assets.image`Seahorse`, SpriteKind.RangedEnemy)
     tiles.placeOnRandomTile(SeaHorse, sprites.dungeon.doorClosedNorth)
     SeaHorse.setVelocity(0, 12)
     SeaHorse.setFlag(SpriteFlag.BounceOnWall, true)
@@ -905,8 +1064,129 @@ function SpawnSeaHorse () {
 }
 function RunDeathCheckForButtonPress () {
     CurLevel = 7
-    tiles.setCurrentTilemap(tilemap`level2`)
-    scene.setBackgroundImage(assets.image`BlueScreen`)
+    tiles.setCurrentTilemap(tilemap`MenuPlace`)
+    scene.setBackgroundImage(img`
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+        `)
     tiles.setWallAt(tiles.getTileLocation(5, 2), true)
     CloudSpawner = sprites.create(img`
         . . . . . . . . . . . . . . . . 
@@ -925,7 +1205,7 @@ function RunDeathCheckForButtonPress () {
         . . . . . . . . . . . . . . . . 
         . . . . . . . . . . . . . . . . 
         . . . . . . . . . . . . . . . . 
-        `, SpriteKind.Player)
+        `, SpriteKind.EnvironmentalAid)
     tiles.placeOnTile(CloudSpawner, tiles.getTileLocation(12, 4))
     RetryLevelButton = sprites.create(img`
         . . . . d d d d d d d d . . . . 
@@ -965,13 +1245,14 @@ function RunDeathCheckForButtonPress () {
         . . . . c c c c c c c c . . . . 
         `, SpriteKind.ButtonMash)
     tiles.placeOnTile(GoToMainButton, tiles.getTileLocation(4, 2))
-    DeathAim = sprites.create(assets.image`UnAliveShark`, SpriteKind.Player)
+    DeathAim = sprites.create(assets.image`UnaliveShark`, SpriteKind.Player)
     tiles.placeOnTile(DeathAim, tiles.getTileLocation(2, 2))
     CurPlayer_X = 2
     CurPlayer_Y = 2
     color.startFade(color.Black, color.originalPalette, 1000)
     DeathAim.sayText("Green to restart, Red to go to the Main Menu.", 2000, true)
     controller.moveSprite(DeathAim, 100, 100)
+    LevelForwardingFunc()
 }
 function LoadOpeningAnim () {
     scene.setBackgroundImage(img`
@@ -1268,52 +1549,3 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.Enemy, function (sprite, otherSp
         SpawnWhale()
     }
 })
-let FroggeirText: Sprite = null
-let openingAnimationPlayed = 0
-let OpeningShark: Sprite = null
-let DeathAim: Sprite = null
-let CloudSpawner: Sprite = null
-let GoToMainButton: Sprite = null
-let RetryLevelButton: Sprite = null
-let PreviousLevel = 0
-let SeaSerpent: Sprite = null
-let ControlsText: TextSprite = null
-let CurLVLText: TextSprite = null
-let Whale: Sprite = null
-let mySprite2: Sprite = null
-let SeaHorse: Sprite = null
-let SeaHorsePellet: Sprite = null
-let list: number[] = []
-let GiantClam: Sprite = null
-let CurPlayer_Y = 0
-let CurPlayer_X = 0
-let MainAim: Sprite = null
-let LevelSelect: Sprite = null
-let BeginPlay: Sprite = null
-let ScoreForwarding = 0
-let CurLevel = 0
-let LevelClearCheck = false
-let TransitionDoorRepeatBlocker = false
-let Doorway: Sprite = null
-let GoalPost: Sprite = null
-let NextLevel = 0
-let GoalPost2: Sprite = null
-let SharkIsBiting = false
-let SplashStageClearIsProc = false
-let ExitHasSpawned = false
-let BallBlueGoalComplete = false
-let BallRedGoalComplete = false
-let EnemyCount = 0
-let SeaHorseIsActive = false
-let SharkIsInPlay = false
-let LevelLoadComplete = false
-let Rock: Sprite = null
-let MagmaBounceCount = 0
-let magma_rocks: Sprite = null
-let mySprite: Sprite = null
-let FirstObjectableTouched = false
-let BallBlueIsHeld = false
-let BallRedIsHeld = false
-let Ball2: Sprite = null
-let Ball: Sprite = null
-LoadLevelOne()
